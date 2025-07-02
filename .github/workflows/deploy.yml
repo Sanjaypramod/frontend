@@ -1,0 +1,29 @@
+name: Deploy Frontend to Kubernetes
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout frontend code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to AWS ECR
+        run: |
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 476356830795.dkr.ecr.ap-south-1.amazonaws.com
+
+      - name: Build and push frontend Docker image
+        run: |
+          docker build -t 476356830795.dkr.ecr.ap-south-1.amazonaws.com/reactjs-frontend:$GITHUB_SHA .
+          docker push 476356830795.dkr.ecr.ap-south-1.amazonaws.com/reactjs-frontend:$GITHUB_SHA
+
+      - name: Deploy frontend to Kubernetes using Helm
+        run: |
+          helm upgrade --install frontend ./charts/frontend
