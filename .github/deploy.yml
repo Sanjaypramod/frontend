@@ -31,7 +31,6 @@ jobs:
       - name: Log in to AWS ECR
         run: |
           aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 476356830795.dkr.ecr.ap-south-1.amazonaws.com
-
       - name: Build and push backend Docker image
         run: |
           IMAGE_TAG=$GITHUB_SHA  # Use Git commit SHA as the image tag
