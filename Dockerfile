@@ -4,8 +4,8 @@ FROM node:14
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+# Copy package.json and package-lock.json into the container
+COPY frontend/package*.json ./  # Adjust based on your folder structure
 
 # Install dependencies
 RUN npm install
