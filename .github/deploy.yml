@@ -1,4 +1,4 @@
-name: Deploy Frontend to Kubernetes
+name: Deploy Backend to Kubernetes
 
 on:
   push:
@@ -9,21 +9,39 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout frontend code
+      - name: Checkout backend code
         uses: actions/checkout@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Set up AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create .kube directory
+        run: mkdir -p ~/.kube
+
+      - name: Set up KUBECONFIG
+        run: echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+
       - name: Log in to AWS ECR
         run: |
           aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 476356830795.dkr.ecr.ap-south-1.amazonaws.com
 
-      - name: Build and push frontend Docker image
+      - name: Build and push backend Docker image
         run: |
-          docker build -t 476356830795.dkr.ecr.ap-south-1.amazonaws.com/reactjs-frontend:$GITHUB_SHA .
-          docker push 476356830795.dkr.ecr.ap-south-1.amazonaws.com/reactjs-frontend:$GITHUB_SHA
+          IMAGE_TAG=$GITHUB_SHA  # Use Git commit SHA as the image tag
+          IMAGE_REPO=476356830795.dkr.ecr.ap-south-1.amazonaws.com/frontend  # Use your ECR repository
+          docker build -t $IMAGE_REPO:$IMAGE_TAG .
+          docker push $IMAGE_REPO:$IMAGE_TAG
 
-      - name: Deploy frontend to Kubernetes using Helm
+      - name: Deploy backend to Kubernetes using Helm
         run: |
-          helm upgrade --install frontend ./charts/frontend
+          helm upgrade --install backend ./charts/backend \
+            --namespace backend-namespace \
+            --set image.repository=476356830795.dkr.ecr.ap-south-1.amazonaws.com/frontend \
+            --set image.tag=$GITHUB_SHA  # Dynamically set the image tag using Git commit SHA
