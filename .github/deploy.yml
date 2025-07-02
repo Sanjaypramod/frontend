@@ -1,4 +1,4 @@
-name: Deploy Backend to Kubernetes
+name: Deploy frontend to Kubernetes
 
 on:
   push:
