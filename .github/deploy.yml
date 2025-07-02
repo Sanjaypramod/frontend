@@ -9,7 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout frontend code
+      - name: Checkout backend code
         uses: actions/checkout@v2
 
       - name: Set up Docker Buildx
@@ -22,12 +22,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Debug AWS Credentials
-        run: |
-          echo "AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID"
-          echo "AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY"
-          echo "AWS_REGION: $AWS_REGION"
-
       - name: Create .kube directory
         run: mkdir -p ~/.kube
 
@@ -37,21 +31,17 @@ jobs:
       - name: Log in to AWS ECR
         run: |
           aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 476356830795.dkr.ecr.ap-south-1.amazonaws.com
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
-      - name: Build and push frontend Docker image
-        run: |
-          IMAGE_TAG=$GITHUB_SHA  # Use Git commit SHA as the image tag
-          IMAGE_REPO=476356830795.dkr.ecr.ap-south-1.amazonaws.com/frontend  # Use your ECR repository
-          docker build -t $IMAGE_REPO:$IMAGE_TAG .
-          docker push $IMAGE_REPO:$IMAGE_TAG
+      # - name: Build and push backend Docker image
+      #   run: |
+      #     IMAGE_TAG=$GITHUB_SHA  # Use Git commit SHA as the image tag
+      #     IMAGE_REPO="476356830795.dkr.ecr.ap-south-1.amazonaws.com/backend"  # Use your ECR repository
+      #     docker build -t $IMAGE_REPO:$IMAGE_TAG .
+      #     docker push $IMAGE_REPO:$IMAGE_TAG
 
-      - name: Deploy frontend to Kubernetes using Helm
-        run: |
-          helm upgrade --install frontend ./charts/frontend \
-            --namespace frontend-namespace \
-            --set image.repository=476356830795.dkr.ecr.ap-south-1.amazonaws.com/frontend \
-            --set image.tag=$GITHUB_SHA  # Dynamically set the image tag using Git commit SHA
+      # - name: Deploy backend to Kubernetes using Helm
+      #   run: |
+      #     helm upgrade --install backend ./charts/backend \
+      #       --namespace backend-namespace \
+      #       --set image.repository=476356830795.dkr.ecr.ap-south-1.amazonaws.com/backend \
+      #       --set image.tag=$GITHUB_SHA  # Dynamically set the image tag using Git commit SHA
