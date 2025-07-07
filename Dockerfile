@@ -5,7 +5,7 @@ FROM node:14
 WORKDIR /app
 
 # Copy package.json and package-lock.json into the container
-COPY src/package*.json ./  # Adjusted based on your folder structure
+COPY ..
 
 # Install dependencies
 RUN npm install
