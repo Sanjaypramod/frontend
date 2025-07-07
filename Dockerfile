@@ -14,5 +14,5 @@ COPY . /app
 # Expose the necessary port
 EXPOSE 3000
 
-# Command to run the application
-CMD ["node", "src/server.js"]
+# Command to run the application (correct path to server.js)
+CMD ["node", "server.js"]
